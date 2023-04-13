@@ -4,7 +4,7 @@ import gymnasium as gym
 
 
 class LunarLanderWrapper(gym.Wrapper):
-    env = gym.make('LunarLanderContinuous-v2')
+    env = gym.make('LunarLanderContinuous-v2', render_mode="human")
 
     def __init__(self, base_env=env):
         super().__init__(base_env)
@@ -46,7 +46,7 @@ class LunarLanderWrapper(gym.Wrapper):
 
         # reset the env
         done = False
-        state = self.env.reset()
+        state, _ = self.env.reset()
 
         while not done:
             if render:
@@ -61,7 +61,8 @@ class LunarLanderWrapper(gym.Wrapper):
                 action[0] = np.clip(action[0], -1, 0.5)
 
             # step into the environment
-            next_state, reward, done, info = self.env.step(action.flatten())
+            next_state, reward, done, truncated, info = self.env.step(
+                action.flatten())
 
             # update
             total_reward += reward
