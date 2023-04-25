@@ -9,6 +9,7 @@ class Actor:
     def __init__(self):
         dev = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.device = torch.device(dev)
+        print(self.device)
 
     def select_action(self, state: torch.tensor):
         state = torch.FloatTensor(state.reshape(1, -1)).to(self.device)
