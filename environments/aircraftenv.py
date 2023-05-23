@@ -99,7 +99,7 @@ class AircraftEnv(BaseEnv):
         if render:
             self.fdm = jsb.FGFDMExec("./JSBSim", None)
             self.fdm.load_model("citation")
-            self.fdm.set_dt(dt)
+            self.fdm.set_dt(self.dt)
             self.fdm.set_output_directive("data_output/flightgear.xml")
             self.fdm.load_ic("cruise_init", True)
             self.fdm.run_ic()
@@ -148,8 +148,25 @@ class AircraftEnv(BaseEnv):
         self.ref_value: np.ndarray = None
         self.theta_trim: float = 0.22 # standard theta trim in degree
         
-    
+        # actuator bounds
+        if self.use_incremental:
+            self.bound = np.deg2rad(25) # [deg/s]
+        else:
+            self.bound = np.deg2rad(10) # [deg]
+            
+        # state bounds
+        self.max_theta = np.deg2rad(60.0) # [deg]
+        self.max_phi = np.deg2rad(75.0) # [deg]
         
             
-    
-    
+        if self.use_incremental:
+            # aircraft state + actuator state + control states error (equal size with actuator states)
+            self.n_obs: int = len(self.obs_idx) + 2*self.n_actions
+        else:
+            # aircraft state + control states error
+            self.n_obs: int = len(self.obs_idx) + self.n_actions
+
+        # state error initialization
+        self.error: np.ndarray = np.zeros((self.n_actions))
+        
+        
