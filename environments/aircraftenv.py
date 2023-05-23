@@ -4,6 +4,7 @@ import gymnasium as gym
 from gymnasium.spaces import Box
 import numpy as np
 import jsbsim as jsb
+from signals.base_signal import BaseSignal
 
 
 def printRed(skk): print(f"\033[91m {skk}\033[00m")
@@ -95,11 +96,6 @@ class AircraftEnv(BaseEnv):
         self.n_actions = 3 # aileron da, elevator de, rudder dr
         self.obs_idx = range(10) # 10 states, all states
         
-        if mode == "nominal":
-            from .h2000_v90 import citation as citation_h2000_v90
-            self.aircraft = citation_h2000_v90
-            printGreen('Trim mode: h=2000 m v=90 m/s (nominal)')
-        
         if render:
             self.fdm = jsb.FGFDMExec("./JSBSim", None)
             self.fdm.load_model("citation")
@@ -110,6 +106,48 @@ class AircraftEnv(BaseEnv):
             self.fdm.do_trim(1)
             self.fdm.print_simulation_configuration()
             
+        
+        if mode == "nominal":
+            from .h2000_v90 import citation as citation_h2000_v90
+            self.aircraft = citation_h2000_v90
+            printGreen('Trim mode: h=2000 m v=90 m/s (nominal)')
+        else:
+            raise ValueError("Unknown trim condition or control mode")
+        
+        self.use_incremental = kwargs['incremental']
+        if self.use_incremental:
+            print('Incremental Control.')
+            
+        # Evaluation mode
+        self.eval_mode: bool = False
+        self.t_max: float = 20 # [s] to be changed
+        
+        # DASMAT Inputs ---> DASMAT States
+        """
+        0: de                       0: p
+        1: da                       1: q
+        2: dr                       2: r
+        3: de trim                  3: V
+        4: da trim                  4: alpha
+        5: dr trim         --->     5: beta
+        6: df                       6: phi
+        7: gear                     7: theta
+        8: throttle1                8: psi
+        9: throttle2                9: he
+                                   10: xe
+                                   11: ye
+        """
+        self.x: np.ndarray = None # observed state vector
+        self.obs: np.ndarray = None
+        self.last_obs: np.ndarray = None
+        self.V0: float = None # [m/s] 
+        self.last_u: np.ndarray = None # last input action or control
+        
+        # references to track
+        self.ref: List[BaseSignal] = None
+        self.ref_value: np.ndarray = None
+        self.theta_trim: float = 0.22 # standard theta trim in degree
+        
     
         
             
