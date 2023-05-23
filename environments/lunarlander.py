@@ -90,7 +90,7 @@ class LunarLanderWrapper(gym.Wrapper):
             x_impact_pos = x_pos
             y_impact_vel = min(all_y_vels)
 
-        return {"total_reward": total_reward, 'bcs': (x_impact_pos, y_impact_vel)}
+        return {"total_reward": total_reward, 'behavioral_char': (x_impact_pos, y_impact_vel)}
 
     def scale_action(self, action: np.ndarray) -> np.ndarray:
         """ Scale the actions from [-1, 1] to the appropriate scale of the action space. """
