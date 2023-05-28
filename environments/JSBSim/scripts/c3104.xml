@@ -3,12 +3,12 @@
 <runscript xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="http://jsbsim.sf.net/JSBSimScript.xsd"
     name="C310-01A takeoff run">
-    
+
   <description>For testing autopilot capability</description>
-  <use aircraft="c310" initialize="ellington"/>
-  
+  <use aircraft="citation" initialize="ellington"/>
+
   <run start="0.0" end="3600" dt="0.02">
-  
+
     <event name="Start engine">
       <description>
         Start engine and set initial heading and waypoints, turn on heading-hold mode.
@@ -39,7 +39,7 @@
         <property caption="Altitude (m)"    > position/h-sl-meters </property>
       </notify>
     </event>
-    
+
     <event name="Set altitude for 1,000 ft.">
       <condition>velocities/vc-fps ge 145.0</condition>
       <set name="ap/altitude_hold" value="1"/>
@@ -50,7 +50,7 @@
         <property caption="Altitude (m)"    > position/h-sl-meters </property>
       </notify>
     </event>
-    
+
     <event name="Raise landing gear">
       <condition>position/h-agl-ft  ge  40</condition>
       <set name="gear/gear-cmd-norm" value="0"/>
@@ -61,7 +61,7 @@
         <property caption="Altitude (m)"    > position/h-sl-meters </property>
       </notify>
     </event>
-    
+
     <event name="Head to first waypoint">
       <description>
         Set heading hold to selected waypoint (setpoint) instead of
@@ -78,7 +78,7 @@
         <property caption="Altitude (m)"    > position/h-sl-meters </property>
       </notify>
     </event>
-    
+
     <event name="Terminate">
       <description>
         When the aircraft arrives back at Ellington Field (fifth waypoint)
@@ -161,7 +161,7 @@
         <property caption="Altitude (m)"    > position/h-sl-meters </property>
       </notify>
     </event>
-    
+
     <event name="Set second waypoint">
       <description>
         When the distance to the first waypoint (Hobby Airport threshold) is less than
@@ -182,6 +182,6 @@
         <property caption="Altitude (m)"    > position/h-sl-meters </property>
       </notify>
     </event>
-    
+
   </run>
 </runscript>

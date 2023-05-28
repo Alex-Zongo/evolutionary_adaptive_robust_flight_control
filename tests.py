@@ -1,4 +1,5 @@
 from environments.lunarlander import LunarLanderWrapper
+from environments.aircraftenv import AircraftEnv
 import torch.nn as nn
 import torch
 import random
@@ -19,7 +20,12 @@ class Actor:
 
 
 if __name__ == '__main__':
-    env = LunarLanderWrapper()
-    actor = Actor()
+    # env = LunarLanderWrapper()
+    # actor = Actor()
 
-    print(env.simulate(actor, render=True))
+    # print(env.simulate(actor, render=True))
+    env = AircraftEnv(configuration="full_control",
+                      render_mode=True, realtime=True, incremental=False)
+    env.reset()
+
+    print(env.step(np.array([0.1, 0.1, 0.05])))

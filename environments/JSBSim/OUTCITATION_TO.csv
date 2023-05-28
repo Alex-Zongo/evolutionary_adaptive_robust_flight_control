@@ -1,0 +1,2 @@
+Time,/fdm/jsbsim/simulation/sim-time-sec,/fdm/jsbsim/position/long-gc-rad,/fdm/jsbsim/position/lat-gc-rad,/fdm/jsbsim/position/h-sl-ft,/fdm/jsbsim/ap/throttle-cmd-norm,/fdm/jsbsim/fcs/elevator-pos-deg,/fdm/jsbsim/fcs/throttle-cmd-norm,/fdm/jsbsim/fcs/throttle-cmd-norm[1]
+0,0,2.1293016874330819,0.82030474843733503,6500.03645004704595,0,0,0,0
