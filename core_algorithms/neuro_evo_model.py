@@ -172,7 +172,7 @@ class SSNE:
             test_score_c = 0
             for _ in range(trials):
                 episode = self.evaluate(
-                    new_agent,  is_action_noise=False, store_transition=False)
+                    newAgent,  is_action_noise=False, store_transition=False)
                 test_score_c += episode.reward
             test_score_c /= trials
 
