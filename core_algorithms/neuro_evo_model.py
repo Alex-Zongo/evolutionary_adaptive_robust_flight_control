@@ -472,6 +472,101 @@ class SSNE:
             NotImplementedError: Unknown operator use for crossover or mutation.
         """
         # NOTE: fitness and bcs (behavioral characteristics) remain unsorted:
+        index_rank = np.argsort(fitness_evals)[::-1]
+        # Elitist indexes safeguard -- first indeces
+        elitist_index = index_rank[:self.num_elitists]
+        # print('Elites:', elitist_index)
+
+        '''    Selection   '''
+        # offsprings are kept for crossover and mutation together with elites
+        offsprings = self.selection_tournament(index_rank,
+                                               num_offsprings=len(
+                                                   index_rank) - self.num_elitists,
+                                               tournament_size=3)
+
+        # Figure out unselected candidates
+        new_elitists = []
+        unselects = []
+        for i in range(self.population_size):
+            if i not in offsprings and i not in elitist_index:
+                unselects.append(i)
+        random.shuffle(unselects)
+
+        # COMPUTE RL_SELECTION RATE
+        if self.rl_policy is not None:  # RL Transfer happened
+            self.selection_stats['total'] += 1.0
+
+            if self.rl_policy in elitist_index:
+                self.selection_stats['elite'] += 1.0
+            elif self.rl_policy in offsprings:
+                self.selection_stats['selected'] += 1.0
+            elif self.rl_policy in unselects:
+                self.selection_stats['discarded'] += 1.0
+            self.rl_policy = None
+
+        # Elitism
+        # >> assigning elite candidates to some unselects
+        for i in elitist_index:
+            try:
+                replacee = unselects.pop(0)
+            except:
+                replacee = offsprings.pop(0)
+            new_elitists.append(replacee)
+            self.clone(master=pop[i], replacee=pop[replacee])
+
+        ''' Crossover '''
+        # >> between elite and offsprings for the unselected genes with 100 percent probability
+        # >> offspring gets an empty buffer
+        if self.args.distil_crossover:
+            if 'fitness' in self.args.distil_type.lower():
+                sorted_groups = SSNE.sort_groups_by_fitness(
+                    new_elitists + offsprings, fitness_evals)
+            elif 'dist' in self.args.distil_type.lower():
+                sorted_groups = SSNE.sort_groups_by_distance(
+                    new_elitists + offsprings, pop)
+            # elif 'novelty' in self.args.distil_type.lower() and bcs_evals is not None:
+            #     print('BC distil crossover')
+                sorted_groups = SSNE.sort_groups_by_novelty(
+                    new_elitists + offsprings, bcs_evals)
+            else:
+                raise NotImplementedError('Unknown distilation type')
+
+            for i, unselected_actor in enumerate(unselects):
+                first, second, _ = sorted_groups[i % len(sorted_groups)]
+                if fitness_evals[first] < fitness_evals[second]:
+                    first, second = second, first
+                offspring = self.distilation_crossover(pop[first], pop[second])
+                self.clone(offspring, pop[unselected_actor])
+        else:
+            if len(unselects) % 2 != 0:  # Number of unselects left should be even
+                unselects.append(unselects[random.randint(0, len(unselects))])
+            for i, j in zip(unselects[0::2], unselects[1::2]):
+                off_i = random.choice(new_elitists)
+                off_j = random.choice(offsprings)
+                self.clone(master=pop[off_i], replacee=pop[i])
+                self.clone(master=pop[off_j], replacee=pop[j])
+                self.crossover_inplace(pop[i], pop[j])
+
+        # Crossover for selected offsprings
+        if self.args.crossover_prob > 0.01:  # so far this is not called
+            for i in offsprings:
+                if random.random() < self.args.mutation_prob:
+                    others = offsprings.copy()
+                    others.remove(i)
+                    off_j = random.choice(others)
+                    self.clone(self.distilation_crossover(
+                        pop[i], pop[off_j]), pop[i])
+
+        '''   Mutation  '''
+        #  Mutate all genes in the population  EXCEPT the new elitists
+        # -> buffer is kept
+        for i in index_rank[self.num_elitists:]:
+            if random.random() < self.args.mutation_prob:
+                self.mutate(pop[i], mag=self.args.mutation_mag)
+
+        self.stats.reset()
+
+        return new_elitists[0]
 
 
 def unsqueeze(arr, axis=1):
