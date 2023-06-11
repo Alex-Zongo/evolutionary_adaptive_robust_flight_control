@@ -10,7 +10,7 @@ from model_utils import hard_update, soft_update, is_lnorm_key
 
 
 class SSNE:
-    def __init__(self, args: Parameters, critic: torch.nn, evaluate: callable) -> None:
+    def __init__(self, args: Parameters, critic: torch.nn, evaluate: callable):
         self.current_gen = 0
         self.args = args
         self.critic = critic
@@ -464,7 +464,7 @@ class SSNE:
         """ One generation update. Entire epoch is handled with indices;
             Index ranks  nets by fitness evaluation - 0 is the best after reversing.
         Args:
-            pop (List[GeneticAgent]): List of gentic actors.
+            pop (List[GeneticAgent]): List of genetic actors.
             fitness_evals (np.array or List[float]): List of fitness values of each actor.
             bcs_evals (np.array, optional): List of behavioral characteristics (tuples) of each actor. Defaults to None.
 
