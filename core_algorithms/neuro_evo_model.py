@@ -519,14 +519,14 @@ class SSNE:
         # >> offspring gets an empty buffer
         if self.args.distil_crossover:
             if 'fitness' in self.args.distil_type.lower():
-                sorted_groups = SSNE.sort_groups_by_fitness(
+                sorted_groups = self.sort_groups_by_fitness(
                     new_elitists + offsprings, fitness_evals)
             elif 'dist' in self.args.distil_type.lower():
-                sorted_groups = SSNE.sort_groups_by_distance(
+                sorted_groups = self.sort_groups_by_distance(
                     new_elitists + offsprings, pop)
             # elif 'novelty' in self.args.distil_type.lower() and bcs_evals is not None:
             #     print('BC distil crossover')
-                sorted_groups = SSNE.sort_groups_by_novelty(
+                sorted_groups = self.sort_groups_by_novelty(
                     new_elitists + offsprings, bcs_evals)
             else:
                 raise NotImplementedError('Unknown distilation type')

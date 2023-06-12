@@ -86,7 +86,14 @@ class DDPG(object):
         TD = (target_q - current_q).abs()
         return TD.item()
 
-    def update_parameters(self, batch, iteration: int):
+    def update_parameters(self, batch, iteration: int, use_champion_target: bool = False):
+        """ Update the parameters of the actor and critic networks
+        Args:
+            batch: a batch of transitions from the replay memory
+        Returns:
+            actor_policy_loss: the loss of the actor network
+            TD error: the TD error of the critic network
+        """
         state_batch, action_batch, next_state_batch, reward_batch, done_batch = batch
 
         # load everything to device GPU if not already done:;
@@ -98,4 +105,36 @@ class DDPG(object):
         next_state_batch = next_state_batch.to(self.args.device)
         action_batch = action_batch.to(self.args.device)
         reward_batch = reward_batch.to(self.args.device)
-        if self.args.use_done_mask: done_batch = done_batch.to(self.args.device)
+        if self.args.use_done_mask:
+            done_batch = done_batch.to(self.args.device)
+
+        # critic update:
+        next_action_batch = self.actor_target.forward(next_state_batch)
+        next_q = self.critic_target.forward(
+            next_state_batch, next_action_batch)
+        if self.args.use_done_mask:
+            next_q = next_q * (1 - done_batch)
+        target_q = reward_batch + (self.gamma * next_q * (1 - done_batch))
+
+        self.critic_optim.zero_grad()
+        current_q = self.critic.forward(state_batch, action_batch)
+        delta = (current_q - target_q).abs()
+        loss = torch.mean(delta**2)
+        loss.backward()
+        nn.utils.clip_grad_norm_(self.critic.parameters(), 10)
+        self.critic_optim.step()
+
+        # actor update:
+        self.actor_optim.zero_grad()
+        policy_grad_loss = - \
+            self.critic.forward(
+                state_batch, self.actor.forward(state_batch)).mean()
+        policy_loss = policy_grad_loss
+
+        policy_loss.backward()
+        nn.utils.clip_grad_norm_(self.actor.parameters(), 10)
+        self.actor_optim.step()
+
+        soft_update(self.actor_target, self.actor, self.tau)
+        soft_update(self.critic_target, self.critic, self.tau)
+        return policy_grad_loss.data.cpu().numpy(), delta.data.cpu().numpy()

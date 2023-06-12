@@ -9,6 +9,8 @@ from environments.aircraftenv import AircraftEnv
 from tqdm import tqdm
 from genetic_agent import GeneticAgent, Actor
 from model_utils import OUNoise, GaussianNoise
+from ddpg import DDPG
+from neuro_evo_model import SSNE
 
 
 class Agent:
@@ -19,7 +21,8 @@ class Agent:
         self.env = environment
 
         # define Rl agent:
-        self.rl_agent = None  # initialize the RL agent: #TODO: TD3, DDPG, PPO or SAC
+        # initialize the RL agent: #TODO: TD3, DDPG, PPO or SAC
+        self.rl_agent = DDPG(args)
 
         # initialize the population:
         self.pop: List = []
@@ -40,11 +43,12 @@ class Agent:
         else:
             self.noise_process = GaussianNoise(
                 args.action_dim, std=args.noise_sd)
-            # else do something else (gaussian noise)
 
         # TODO: initialise the evolutionary loop:
         if not self.pop:
-            self.evolver = None  # do something:
+            # do something:
+            self.evolver = SSNE(
+                self.params, self.rl_agent.critic, self.evaluate)
 
         # TODO: testing:
         self.validation_tests = 5
@@ -56,17 +60,18 @@ class Agent:
         self.gen_frames = None
         self.rl_history = None
         self.rl_iteration = 0
-        self.champion = None  # TODO: add a type genetic agent:
-        self.champion_actor = None  # TODO: add a type genetic agent:
+        self.champion: GeneticAgent = None  # TODO: add a type genetic agent:
+        # TODO: add a type genetic agent Actor:
+        self.champion_actor: Actor = None
         self.champion_history: np.ndarray = None
 
     # TODO: add type to the "agent" param -> [GeneticAgent, TD3, SAC or DDPG]
-    def evaluate(self, agent, is_action_noise: bool, store_transition: bool) -> Episode:
+    def evaluate(self, agent: DDPG or GeneticAgent, is_action_noise: bool, store_transition: bool):
         """
         Play one game to evaluate the agent:
         Args:
             agent:
-            is_action_noise: wheter to add noise to action or not
+            is_action_noise: whether to add noise to action or not
             store_transition: add frames to memory buffer for training:
         Returns:
             Episode: data class with stats:
@@ -131,7 +136,7 @@ class Agent:
 
         return Episode(fitness=fitness, smoothness=smoothness, length=info['t'], state_history=state_lst, ref_signals=info['ref'], actions=actions, reward_lst=rewards)
 
-    def rl_to_evo_loop(self, rl_agent, evo_net):
+    def rl_to_evo_loop(self, rl_agent: DDPG, evo_net: GeneticAgent):
         for target_param, param in zip(evo_net.parameters(), rl_agent.actor.parameters()):
             target_param.data.copy_(param.data)
         evo_net.buffer.reset()
@@ -149,7 +154,7 @@ class Agent:
     def train_rl(self, rl_transitions: int) -> Dict[float, float]:
         """ Train the RL agent on the same number of frames seen by the entire population. The frames are sampled from the common replay buffer. """
 
-        pgs_obj, TD_loss = [], []  # TODO: defined for the TD3 algorithm
+        policy_grad_loss, TD_loss = [], []  # TODO: the policy gradient loss and TD error
 
         if len(self.replay_buffer) > self.params.learn_start:
             # start training only when enough frames collected:
@@ -165,15 +170,15 @@ class Agent:
         for _ in tqdm(range(int(rl_transitions*self.params.frac_frames_train)), desc='Train RL', colour='blue'):
             self.rl_iteration += 1
             batch = self.replay_buffer.sample(self.params.batch_size)
-            pgl, loss = self.rl_agent.update_parameters(
+            pgl, td_loss = self.rl_agent.update_parameters(
                 batch, self.rl_iteration, self.params.use_champion_target)
 
             if pgl is not None:
-                pgs_obj.append(-pgl)
-            if loss is not None:
-                TD_loss.append(loss)
+                policy_grad_loss.append(-pgl)
+            if td_loss is not None:
+                TD_loss.append(td_loss)
 
-        return {'PG_obj': np.mean(pgs_obj), 'TD_loss': np.median(TD_loss)}
+        return {'PG_obj': np.mean(policy_grad_loss), 'TD_loss': np.median(TD_loss)}
 
     def validate_agent(self, agent: Actor) -> Tuple[float, float, float, float, Episode]:
         """ Evaluate the given agent actor and do not store transitions. """
@@ -220,7 +225,7 @@ class Agent:
             for j, net in tqdm(enumerate(self.pop), total=len(self.pop), desc='Population Evaluation', colour='green'):
                 for i in range(self.params.num_evals):
                     episode = self.evaluate(
-                        net, is_action_noise=False, store_transition=(i == self.params.num_evals-1))
+                        net, is_action_noise=False, store_transition=(i == self.params.num_evals-1))  # only store the transitions of last episode
 
                     smoothness_lst.append(episode.smoothness)
                     lengths.append(episode.length)
