@@ -1,10 +1,10 @@
 import torch
 import torch.nn as nn
 from torch.nn import functional as F
-from replay_memory import ReplayMemory, PrioritizedReplayMemory
+from core_algorithms.replay_memory import ReplayMemory, PrioritizedReplayMemory
 from parameters import Parameters
-from model_utils import LayerNorm, hard_update, soft_update
-from genetic_agent import Actor
+from core_algorithms.model_utils import LayerNorm, hard_update, soft_update
+from core_algorithms.genetic_agent import Actor
 from torch.optim import Adam
 
 
@@ -44,7 +44,7 @@ class Critic(nn.Module):
 
         # hidden layers:
         hid = F.elu(self.lnorm1(self.hidden1(x)))  # hidden layer 1
-        hid = F.elu(self.lnorm2(self.hidden(hid)))  # hidden layer 2
+        hid = F.elu(self.lnorm2(self.hidden2(hid)))  # hidden layer 2
 
         # output layer:
         out = self.output_layer(hid)

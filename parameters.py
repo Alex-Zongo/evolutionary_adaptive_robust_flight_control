@@ -12,7 +12,8 @@ class Parameters:
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         print('Current device: %s' % self.device)
 
-        self.env_name = conf.env
+        self.env_name = conf.env if hasattr(
+            conf, 'env') else 'Citation Aircraft'
         self.save_periodic = True if hasattr(conf, 'save_periodic') else False
 
         # num of frames to run:

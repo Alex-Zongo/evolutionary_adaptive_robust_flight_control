@@ -273,23 +273,23 @@ class AircraftEnv(BaseEnv):
 
         # refs signals for phi and theta
         if "user_refs" not in kwargs:
-            self.theta_trim = np.rad2deg(self.theta_trim)
+            self.theta_trim = np.rad2deg(self.theta)
             step_theta = RandomizedCosineStepSequence(
                 t_max=self.t_max,
                 ampl_max=30,
                 block_width=self.t_max//5,
                 smooth_width=self.t_max//6,
                 n_levels=self.t_max//2,
-                vary_timings=self.t_max/500
+                vary_timings=self.t_max/500.
             )
 
             step_phi = RandomizedCosineStepSequence(
                 t_max=self.t_max,
-                ampl_max=30,
+                ampl_max=20,
                 block_width=self.t_max//5,
                 smooth_width=self.t_max//6,
                 n_levels=self.t_max//2,
-                vary_timings=self.t_max/500
+                vary_timings=self.t_max/500.
             )
         else:
             if not self.eval_mode:
@@ -301,11 +301,11 @@ class AircraftEnv(BaseEnv):
         step_theta += Const(0.0, self.t_max, self.theta_trim)
         self.ref = [step_theta, step_phi, step_beta]
 
-    def calc_reference_value(self) -> List[float]:
+    def calc_reference_value(self):
         # Calculates the reference value for the current time step (theta, phi, psi)
         self.ref_values = np.asarray(
             [np.deg2rad(ref_signal(self.t)) for ref_signal in self.ref])
-        return self.ref_values
+        # print(self.ref_values)
 
     def get_controlled_state(self) -> List[float]:
         """ Returns the values of the controlled states """

@@ -1,47 +1,61 @@
 import torch
 import torch.nn as nn
 from torch.optim import Adam
+from torch.nn import functional as F
 from parameters import Parameters
-from model_utils import activations, is_lnorm_key, LayerNorm
-from replay_memory import ReplayMemory, PrioritizedReplayMemory
+from core_algorithms.model_utils import activations, is_lnorm_key, LayerNorm
+from core_algorithms.replay_memory import ReplayMemory, PrioritizedReplayMemory
 
 
 class Actor(nn.Module):
     def __init__(self, args: Parameters, init=False):
+        super(Actor, self).__init__()
         self.args = args
-        h = args.hidden_size
-        L = args.num_layers
-        activation = activations[args.activation_actor.lower()]
-
+        h = self.args.hidden_size
+        L = self.args.num_layers
+        self.activation = activations[args.activation_actor.lower()]
+        # activ_layer = F.tanh() if activation == nn.Tanh else F.elu()
         layers = []
         # input Layer:
-        layers.extend([
-            nn.Linear(args.state_dim, h),
-            activation,
-        ])
-
+        self.input_layer = nn.Linear(args.state_dim, h)
         # hidden layers:
-        for _ in range(L):
-            layers.extend([
-                nn.Linear(h, h),
-                LayerNorm(h),
-                activation,
-            ])
-
+        self.hid_layer = nn.Linear(h, h)
+        self.lnorm = LayerNorm(h)
         # output layer:
-        layers.extend([
-            nn.Linear(h, args.action_dim),
-            nn.Tanh(),
-        ])
+        self.output_layer = nn.Linear(h, args.action_dim)
 
-        self.net = nn.Sequential(*layers)
+        # layers.extend([
+        #     nn.Linear(args.state_dim, h),
+        #     activation
+        # ])
+
+        # # hidden layers:
+        # for _ in range(L):
+        #     layers.extend([
+        #         nn.Linear(h, h),
+        #         LayerNorm(h),
+        #         activation
+        #     ])
+
+        # # output layer:
+        # layers.extend([
+        #     nn.Linear(h, args.action_dim),
+        #     nn.Tanh()
+        # ])
+        # # print(*layers)
+        # self.net = nn.Sequential(*layers)
         self.to(args.device)
 
-    def forward(self, state: torch.tensor) -> torch.tensor:
-        return self.net(state)
+    def forward(self, state: torch.tensor):
+        # return self.net(state)
+        x = self.activation(self.input_layer(state))  # input setup:
+        for _ in range(self.args.num_layers):
+            # hidden layers:
+            x = self.activation(self.lnorm(self.hid_layer(x)))
+        return F.tanh(self.output_layer(x))  # output layer:
 
     def select_action(self, state: torch.tensor):
-        state = torch.FloatTensor(state.reshape(-1, 1)).to(self.args.device)
+        state = torch.FloatTensor(state.reshape(1, -1)).to(self.args.device)
         return self.forward(state).cpu().data.numpy().flatten()
 
     def get_novelty(self, batch):
@@ -101,7 +115,7 @@ class Actor(nn.Module):
         return count
 
 
-class geneticAgent:
+class GeneticAgent:
     def __init__(self, args: Parameters):
         """ Genetic Agent initialization:
         Args:
@@ -112,9 +126,9 @@ class geneticAgent:
         self.actor_optim = Adam(self.actor.parameters(), lr=1e-3)
 
         self.buffer = ReplayMemory(
-            self.args.individual_bs, self.args.batch_size, device=self.args.device)
+            self.args.individual_bs, device=self.args.device)
         self.critical_buffer = ReplayMemory(
-            self.args.individual_bs, self.args.batch_size, device=self.args.device)
+            self.args.individual_bs, device=self.args.device)
         # self.loss = nn.MSELoss()
 
     def update_parameters(self, batch, parent1: Actor, parent2: Actor, critic) -> float:

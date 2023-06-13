@@ -24,7 +24,7 @@ class Episode:
         Returns the time traced state history of the episode.
         """
         time_trace_hist = np.linspace(0, self.length, len(self.state_history))
-        ref_values = np.array([[ref(t_i) for t_i in time_trace_hist]
+        ref_values = np.array([[ref for t_i in time_trace_hist]
                               for ref in self.ref_signals]).transpose()
         reward_lst = np.asarray(self.reward_lst).reshape(
             (len(self.state_history), 1))

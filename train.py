@@ -90,7 +90,6 @@ if __name__ == '__main__':
     parameters.action_dim = env.action_space.shape[0]
     parameters.state_dim = env.observation_space.shape[0]
 
-
     if conf.config_path is not None:
         path = os.getcwd()
         pwd = os.path.abspath(os.path.join(path, os.pardir))
@@ -120,7 +119,7 @@ if __name__ == '__main__':
     random.seed(parameters.seed)
 
     # create the agent:
-    agent = Agent(args=parameters, env=env)
+    agent = Agent(args=parameters, environment=env)
     print(
         f" Running the environment: {env_name}\n State_dim: {parameters.state_dim}\n Action_dim: {parameters.action_dim}\n")
 

@@ -4,13 +4,13 @@ import numpy as np
 from core_algorithms.utils import Episode, calc_smoothness
 from parameters import Parameters
 from typing import List, Dict, Tuple
-from replay_memory import ReplayMemory, PrioritizedReplayMemory
+from core_algorithms.replay_memory import ReplayMemory, PrioritizedReplayMemory
 from environments.aircraftenv import AircraftEnv
 from tqdm import tqdm
-from genetic_agent import GeneticAgent, Actor
-from model_utils import OUNoise, GaussianNoise
-from ddpg import DDPG
-from neuro_evo_model import SSNE
+from core_algorithms.genetic_agent import GeneticAgent, Actor
+from core_algorithms.model_utils import OUNoise, GaussianNoise
+from core_algorithms.ddpg import DDPG
+from core_algorithms.neuro_evo_model import SSNE
 
 
 class Agent:
@@ -45,7 +45,7 @@ class Agent:
                 args.action_dim, std=args.noise_sd)
 
         # TODO: initialise the evolutionary loop:
-        if not self.pop:
+        if self.pop:
             # do something:
             self.evolver = SSNE(
                 self.params, self.rl_agent.critic, self.evaluate)
@@ -180,14 +180,20 @@ class Agent:
 
         return {'PG_obj': np.mean(policy_grad_loss), 'TD_loss': np.median(TD_loss)}
 
-    def validate_agent(self, agent: Actor) -> Tuple[float, float, float, float, Episode]:
-        """ Evaluate the given agent actor and do not store transitions. """
+    def validate_agent(self, agent: Actor) -> Tuple[float, float, float, float, float, float, Episode]:
+        """ Evaluate the given agent actor and do not store transitions.
+
+        Args:
+            agent (Actor): the agent to evaluate.
+        Returns:
+            Tuple[float, float, float, float, float, float, Episode]: the test score, test score std, episode length, episode length std, smoothness, smoothness std and the last episode.
+        """
         test_scores, episode_lengths, smoothness_lst = [], [], []
 
         for _ in range(self.validation_tests):
             last_episode = self.evaluate(
                 agent, is_action_noise=False, store_transition=False)
-            test_scores.append(last_episode.reward_lst)
+            test_scores.append(np.sum(last_episode.reward_lst))
             episode_lengths.append(last_episode.length)
             smoothness_lst.append(last_episode.smoothness)
 
@@ -217,8 +223,9 @@ class Agent:
         lengths = []
 
         '''++++++++++++++ Evolution +++++++++++++'''
-        if not self.pop:  # TODO: what does this means??
-            fitness_lst = np.zeros(self.params.num_evals, self.params.pop_size)
+        if self.pop:  # TODO: what does this means??
+            fitness_lst = np.zeros(
+                (self.params.num_evals, self.params.pop_size))
             smoothness_lst = []
 
             # Evaluate the individual agents/ genomes:

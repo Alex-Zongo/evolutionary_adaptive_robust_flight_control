@@ -5,8 +5,8 @@ import random
 import math
 import torch
 from typing import List, Dict, Tuple
-from genetic_agent import GeneticAgent
-from model_utils import hard_update, soft_update, is_lnorm_key
+from core_algorithms.genetic_agent import GeneticAgent
+from core_algorithms.model_utils import hard_update, soft_update, is_lnorm_key
 
 
 class SSNE:
@@ -37,11 +37,11 @@ class SSNE:
         else:
             raise ValueError('Mutation type is unknown!')
 
-    def selection_tournament(self, index_rank: List[int], num_offspring: int, tournament_size: int) -> List[GeneticAgent]:
+    def selection_tournament(self, index_rank: List[int], num_offsprings: int, tournament_size: int) -> List[GeneticAgent]:
         """ Returns a list of non-elite offsprings """
         total_choice = len(index_rank)
         offsprings = []
-        for _ in range(num_offspring):
+        for _ in range(num_offsprings):
             winner = np.min(np.random.randint(
                 total_choice, size=tournament_size))
             offsprings.append(index_rank[winner])
