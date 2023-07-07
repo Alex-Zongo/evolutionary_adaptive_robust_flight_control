@@ -69,7 +69,7 @@ class DDPG(object):
 
         self.gamma = args.gamma
         self.tau = args.tau
-        self.loss = nn.MSELoss()
+        # self.loss = nn.MSELoss()
 
         # initialy make sure both network targets are of the same weights:
         hard_update(self.actor_target, self.actor)

@@ -50,7 +50,7 @@ class SSNE:
         offsprings = list(set(offsprings))
         # we are looking for even number of offsprings:
         if len(offsprings) % 2 != 0:
-            offsprings.append(offsprings[random.randint(0, len(offsprings))])
+            offsprings.append(offsprings[random.randint(0, len(offsprings)-1)])
         return offsprings
 
     def list_argsort(self, seq):
@@ -153,7 +153,7 @@ class SSNE:
                     batch, gene1.actor, gene2.actor, self.critic))
 
         # test and print:
-        if self.args.test_ea and self.args._verbose_crossover:
+        if self.args.test_ea and self.args.verbose_crossover:
             test_score_p1 = 0
             trials = 5
             for _ in range(trials):
@@ -230,7 +230,7 @@ class SSNE:
         model.inject_parameters(new_params)
 
         # test
-        if self.args.test_ea and self.args._verbose_mut:
+        if self.args.test_ea and self.args.verbose_mut:
             trials = 5
             test_score_p = 0
             for _ in range(trials):
@@ -311,7 +311,7 @@ class SSNE:
         model.inject_parameters(new_params)
 
         # test
-        if self.args.test_ea and self.args._verbose_mut:
+        if self.args.test_ea and self.args.verbose_mut:
             trials = 5
             test_score_p = 0
             for _ in range(trials):
@@ -521,11 +521,11 @@ class SSNE:
             if 'fitness' in self.args.distil_type.lower():
                 sorted_groups = self.sort_groups_by_fitness(
                     new_elitists + offsprings, fitness_evals)
-            elif 'dist' in self.args.distil_type.lower():
+            elif 'distance' in self.args.distil_type.lower():
                 sorted_groups = self.sort_groups_by_distance(
                     new_elitists + offsprings, pop)
-            # elif 'novelty' in self.args.distil_type.lower() and bcs_evals is not None:
-            #     print('BC distil crossover')
+            elif 'novelty' in self.args.distil_type.lower() and bcs_evals is not None:
+                #     print('BC distil crossover')
                 sorted_groups = self.sort_groups_by_novelty(
                     new_elitists + offsprings, bcs_evals)
             else:

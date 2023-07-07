@@ -94,14 +94,18 @@ class AircraftEnv(BaseEnv):
     def __init__(self, configuration: str = None, mode: str = "nominal", render_mode: bool = False, realtime: bool = False, **kwargs):
         self.render_mode = render_mode
         # full state control
+        # ******* Determine the action space and observation space ********
         self.n_actions = 3  # aileron da, elevator de, rudder dr
         if "attitude" in configuration.lower():
             # p, q, r, and alpha -> might change that to [phi, theta, psi, p, q, r] #TODO
             print("Attitude Control.\n")
-            self.obs_idx = [0, 1, 2, 4]
+            # self.obs_idx = [0, 1, 2, 4] #
+            self.obs_idx = [0, 1, 2]
+
         else:
             print("Full State Control.\n")
             self.obs_idx = range(10)  # 10 states, all states
+        # ***************************************************
 
         if self.render_mode:
             self.fdm = jsb.FGFDMExec("environments/JSBSim", None)
@@ -119,14 +123,70 @@ class AircraftEnv(BaseEnv):
             self.fdm.print_simulation_configuration()
             self.realtime = realtime
 
-        if mode == "nominal":
+        # ******* environment mode selection  ********
+        if mode == "nominal" or 'h2000-v90' == mode.lower() or 'incremental' in mode.lower():
             from .h2000_v90 import citation as citation_h2000_v90
             self.aircraft = citation_h2000_v90
             printGreen('Trim mode: h=2000 m v=90 m/s (nominal)')
+        elif 'h2000-v150' == mode.lower() or 'high-q' == mode.lower():
+            from .h2000_v150 import citation as citation_h2000_v150
+            printCyan('Trim mode: h=2000 m v=150 m/s (high-q)')
+            self.aircraft = citation_h2000_v150
+        elif 'h10000-v90' == mode.lower() or 'low-q' == mode.lower():
+            from .h10000_v90 import citation as citation_h10000_v90
+            printCyan('Trim mode: h=10000 m v=90 m/s (low-q)')
+            self.aircraft = citation_h10000_v90
+        elif 'be' == mode.lower():  # be = broken elevator:
+            from .be import citation as citation_be
+            printRed('Trim mode: h-2000 m v=90 m/s Broken Elevator 70%')
+            self.aircraft = citation_be
+        elif 'jr' == mode.lower():  # jr = jammed rudder:
+            from .jr import citation as citation_jr
+            printRed('Trim mode: h-2000 m v=90 m/s Jammed Rudder at 15 deg')
+            self.aircraft = citation_jr
+        elif 'se' == mode.lower():  # se = saturated elevator:
+            from .se import citation as citation_se
+            printRed(
+                'Trim mode: h-2000 m v=90 m/s Saturated Elevator at +/- 2.5 deg')
+            self.aircraft = citation_se
+        elif 'sa' == mode.lower():  # sa = saturated aileron:
+            from .sa import citation as citation_sa
+            printRed(
+                'Trim mode: h-2000 m v=90 m/s Saturated Aileron at +/- 1.0 deg')
+            self.aircraft = citation_sa
+        elif 'ice' == mode.lower():  # ice = icing:
+            from .ice import citation as citation_ice
+            printRed('Trim mode: h-2000 m v=90 m/s Iced')
+            self.aircraft = citation_ice
+        elif 'noise' == mode.lower():  # noise = noise:
+            from .noise import citation as citation_noise
+            printRed('Trim mode: h-2000 m v=90 m/s Noisy sensors')
+            self.aircraft = citation_noise
+        elif 'cg-for' == mode.lower():  # cg-for = cg forward:
+            from .cg_for import citation as citation_cg_for
+            printRed('Trim mode: h-2000 m v=90 m/s CG Forward')
+            self.aircraft = citation_cg_for
+        elif 'cg' == mode.lower():  # cg = cg aft:
+            from .cg import citation as citation_cg
+            printRed('Trim mode: h-2000 m v=90 m/s CG Aft')
+            self.aircraft = citation_cg
+        elif 'cg-shift' == mode.lower():  # cg aft after 20s
+            from .cg_timed import citation as citation_cg_timed
+            printRed('Trim mode: h-2000 m v=90 m/s CG Aft after 20s')
+            self.aircraft = citation_cg_timed
+        elif 'gust' == mode.lower():  # gust = gust:
+            from .gust import citation as citation_gust
+            printRed('Trim mode: h-2000 m v=90 m/s Vertical Gust of 15ft/s at 20s')
+            self.aircraft = citation_gust
+        elif 'test' in mode.lower():  # test = test:
+            from .test import citation as citation_test
+            printRed('Test Case')
+            self.aircraft = citation_test
         else:
             raise ValueError("Unknown trim condition or control mode")
+        # ***********************************************
 
-        self.use_incremental = kwargs['incremental']
+        self.use_incremental = 'incremental' in mode.lower()
         if self.use_incremental:
             print('Incremental Control.')
 
@@ -187,7 +247,7 @@ class AircraftEnv(BaseEnv):
         self.max_bound = np.ones(self.error.shape)  # bounds for state error
 
     @property
-    def action_space(self) -> Box:
+    def action_space(self):
         """actuators bounds in radians"""
         return Box(
             low=-self.bound*np.ones(self.n_actions),
@@ -196,7 +256,7 @@ class AircraftEnv(BaseEnv):
         )
 
     @property
-    def observation_space(self) -> Box:
+    def observation_space(self):
         """states bounds in degrees (phi, theta, psi, ...)"""
         return Box(
             low=-30*np.ones(self.n_obs),
@@ -205,57 +265,57 @@ class AircraftEnv(BaseEnv):
         )
 
     @property
-    def p(self) -> float:
+    def p(self):
         """p: is the roll rate"""
         return self.x[0]
 
     @property
-    def q(self) -> float:
+    def q(self):
         """q: is the pitch rate"""
         return self.x[1]
 
     @property
-    def r(self) -> float:
+    def r(self):
         """r: is the yaw rate"""
         return self.x[2]
 
     @property
-    def V(self) -> float:
+    def V(self):
         """v: is the airspeed"""
         return self.x[3]
 
     @property
-    def alpha(self) -> float:
+    def alpha(self):
         """ alpha is the angle of attack"""
         return self.x[4]
 
     @property
-    def beta(self) -> float:
+    def beta(self):
         """ beta is the sideslip angle"""
         return self.x[5]
 
     @property
-    def phi(self) -> float:
+    def phi(self):
         """ phi is the roll angle"""
         return self.x[6]
 
     @property
-    def theta(self) -> float:
+    def theta(self):
         """ theta is the pitch angle"""
         return self.x[7]
 
     @property
-    def psi(self) -> float:
+    def psi(self):
         """ psi is the yaw angle"""
         return self.x[8]
 
     @property
-    def h(self) -> float:
+    def h(self):
         """ h is the altitude"""
         return self.x[9]
 
     @property
-    def nz(self) -> float:
+    def nz(self):
         """ nz is the load factor"""
         return 1.0 + self.q * self.V / (self.g)
 
@@ -300,33 +360,33 @@ class AircraftEnv(BaseEnv):
 
         step_theta += Const(0.0, self.t_max, self.theta_trim)
         self.ref = [step_theta, step_phi, step_beta]
+        # print(self.ref)
 
     def calc_reference_value(self):
         # Calculates the reference value for the current time step (theta, phi, psi)
         self.ref_values = np.asarray(
             [np.deg2rad(ref_signal(self.t)) for ref_signal in self.ref])
-        # print(self.ref_values)
 
-    def get_controlled_state(self) -> List[float]:
+    def get_controlled_state(self):
         """ Returns the values of the controlled states """
-        ctrl = np.asarray([self.theta, self.phi, self.psi]
+        ctrl = np.asarray([self.theta, self.phi, self.beta]
                           )  # replaced beta with psi
         return ctrl[:self.n_actions]
 
-    def calc_error(self) -> np.ndarray:
+    def calc_error(self):
         """ Calculates the error between the controlled states and the reference values """
         self.calc_reference_value()
         self.error[:self.n_actions] = self.ref_values - \
             self.get_controlled_state()
 
-    def get_reward(self) -> float:
+    def get_reward(self):
         """ Calculates the reward """
         self.calc_error()
         reward = -np.sum(np.abs(np.clip(self.error *
                          self.error_scaler, -self.max_bound, self.max_bound)))
         return reward/self.error.shape[0]
 
-    def get_cost(self) -> float:
+    def get_cost(self):
         """ the binary cost of  the last transition -> defining good behavior of the airplane"""
 
         if np.rad2deg(np.abs(self.alpha)) > 11.0 or \
@@ -335,11 +395,11 @@ class AircraftEnv(BaseEnv):
             return 1
         return 0
 
-    def incremental_control(self, action: np.ndarray) -> np.ndarray:
+    def incremental_control(self, action: np.ndarray):
         """ low-pass filtered Incremental control input for the citation model """
         return self.last_u + action * self.dt
 
-    def pad_action(self, action: np.ndarray) -> np.ndarray:
+    def pad_action(self, action: np.ndarray):
         """ Pad action with zeros to correspond to the simulink model input dimensions"""
         # TODO might modify the control inputs to include throttle cmd for a full body control
         citation_input = np.pad(
@@ -385,9 +445,16 @@ class AircraftEnv(BaseEnv):
             self.fdm.run_ic()
             self.fdm.do_trim(1)
 
-        return self.obs
+        # info:
+        info = {
+            "ref": self.ref,
+            "x": self.x,
+            "t": self.t,
+        }
 
-    def step(self, action: np.ndarray) -> Tuple[np.ndarray, float, bool, dict]:
+        return self.obs, info
+
+    def step(self, action: np.ndarray):
         """ One Step in time by the agent in the environment
         Args:
             action: the action taken by the agent - Un-scaled input in the interval of [-1, 1]
@@ -419,7 +486,7 @@ class AircraftEnv(BaseEnv):
         cost = self.get_cost()
 
         # update observation based on perfect observations and actuator state:
-        self.calc_error()  # update observation state error
+        # self.calc_error()  # update observation state error
         self.obs = np.hstack((self.error.flatten(), self.x[self.obs_idx]))
         self.last_u = u
         if self.use_incremental:
@@ -434,7 +501,7 @@ class AircraftEnv(BaseEnv):
 
         # info:
         info = {
-            "ref": self.ref_values,
+            "ref": self.ref,
             "x": self.x,
             "t": self.t,
             "cost": cost,

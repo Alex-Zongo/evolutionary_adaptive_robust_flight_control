@@ -19,20 +19,21 @@ class Episode:
     actions: List
     reward_lst: List
 
-    def get_history(self) -> np.ndarray:
+    def get_history(self):
         """
         Returns the time traced state history of the episode.
         """
         time_trace_hist = np.linspace(0, self.length, len(self.state_history))
-        ref_values = np.array([[ref for t_i in time_trace_hist]
+        ref_values = np.array([[np.deg2rad(ref(t_i)) for t_i in time_trace_hist]
                               for ref in self.ref_signals]).transpose()
+        # print(ref_values)
         reward_lst = np.asarray(self.reward_lst).reshape(
             (len(self.state_history), 1))
 
         return np.concatenate((ref_values, self.actions, self.state_history, reward_lst), axis=1)
 
 
-def calc_nMAE(error: np.array) -> float:
+def calc_nMAE(error: np.array):
     """Calculates the normalized Mean absolute error using the error time history
     Args:
         error (np.array): error time history
@@ -66,7 +67,7 @@ def calc_nMAE_from_ref(ref: np.ndarray, x_crtl: np.ndarray):
     return np.mean(nmae) * 100  # normalized (in percentage)
 
 
-def calc_smoothness(y: np.ndarray, dt: float = 0.01, **kwargs) -> float:
+def calc_smoothness(y: np.ndarray, dt: float = 0.01, **kwargs):
     """Calculates the smoothness of a signal
     Args:
         y (np.ndarray): signal
@@ -104,10 +105,10 @@ def calc_smoothness(y: np.ndarray, dt: float = 0.01, **kwargs) -> float:
 
 
 def load_config(model_path: str, verbose: bool = False) -> dict:
-    """ Load controller confiuaration from file.
+    """ Load controller configuration from file.
 
     Args:
-        model_path (str): Abosolute path to logging folder.
+        model_path (str): Absolute path to logging folder.
 
     Returns:
         dict: Configuration dictionary.

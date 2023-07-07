@@ -150,7 +150,7 @@ class PrioritizedReplayMemory:
     def beta_by_frame(self, frame_idx):
         return min(1.0, self.beta_start + frame_idx * (1.0 - self.beta_start) / self.beta_frames)
 
-    def add(self, *args):
+    def push(self, *args):
 
         reshaped_args = []
         for arg in args:

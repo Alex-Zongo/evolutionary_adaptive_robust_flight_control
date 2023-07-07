@@ -9,7 +9,11 @@ class Parameters:
             return
 
         # setting the device:
-        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        if not conf.disable_cuda and torch.cuda.is_available():
+            self.device = torch.device("cuda")
+        else:
+            self.device = torch.device("cpu")
+
         print('Current device: %s' % self.device)
 
         self.env_name = conf.env if hasattr(
@@ -17,8 +21,8 @@ class Parameters:
         self.save_periodic = True if hasattr(conf, 'save_periodic') else False
 
         # num of frames to run:
-        if hasattr(conf, 'num_frames'):
-            self.num_frames = conf.num_frames
+        if hasattr(conf, 'frames'):
+            self.num_frames = conf.frames
         else:
             self.num_frames = 800_000
 
@@ -40,12 +44,13 @@ class Parameters:
             self.frac_frames_train = 1
 
         # Number of experiences to use for each training step:
-        self.batch_size = 86
-        self.buffer_size = 100_000
+        self.batch_size = 64  # 64 for TD3 alone
+        self.buffer_size = 100_000  # 100_000 for TD3 alone
 
-        self.lr = 0.0004335
-        self.gamma = 0.98
-        self.noise_sd = 0.2962183114680794
+        self.lr = 0.0004335  # for TD3 alone
+
+        self.gamma = 0.99
+        self.noise_sd = 0.33
 
         self.use_done_mask = True
         self.use_ounoise = conf.use_ounoise if hasattr(
@@ -56,9 +61,16 @@ class Parameters:
 
         # hidden layer:
         self.num_layers = 3
+        self.actor_num_layers = 3
+        self.actor_hidden_size = 96  # 72 for SERL10 or SERL50, 96 for TD3
+
         self.hidden_size = 72
+        self.critic_num_layers = 2
+        self.critic_hidden_size = [200, 300]
+
         self.activation_actor = 'tanh'
         self.activation_critic = 'elu'
+        self.nonlin_activation = 'relu'  # for SERL10 or SERL50, 'relu' for TD3
 
         self.learn_start = 10_000  # frames accumulated before grad updates:
         # prioritized experience replay:
@@ -75,6 +87,8 @@ class Parameters:
         self.policy_update_freq = 3      # minimum for TD3 is 2
         self.noise_clip = 0.5                # default for TD3
 
+        # self.smooth_fitness = True
+
         # ------------- Neuro Evolution (EA) Params ---------
         # number of actors in the population:
         self.pop_size = conf.pop_size if hasattr(conf, "pop_size") else 10
@@ -84,27 +98,38 @@ class Parameters:
             conf, "champion_target") else False
 
         # genetic memory size or individual buffer size:
-        self.individual_bs = 10_000
+        self.individual_bs = 8_000
 
         if self.pop_size:
             self.smooth_fitness = conf.smooth_fitness if hasattr(
                 conf, "smooth_fitness") else False  # or False,#TODO: study the effects
+            self.actor_hidden_size = 72
+            self.nonlin_activation = 'tanh'
+            self.individual_bs = 8_000
 
-            # increase the buffer size:
-            self.buffer_size = 800_000
-
-            # decrease the learning rate:
-            self.lr = 0.00018643512599969097
-
-            # num of trials during evaluation step:
-            self.num_evals = 3
-
-            # elitism rate - % of elite within the population
-            self.elite_fraction = 0.2
+            if self.pop_size <= 10:
+                # increase the buffer size:
+                self.buffer_size = 800_000
+                self.batch_size = 86
+                self.noise_sd = 0.2962183114680794
+                self.mutation_mag = 0.0247682869654
+                self.elite_fraction = 0.3  # elitism rate - % of elite within the population
+                # decrease the learning rate:
+                self.lr = 0.0000482
+                # num of trials during evaluation step:
+                self.num_evals = 5
+            else:
+                self.buffer_size = 2_000_000
+                self.batch_size = 256
+                self.noise_sd = 0.23
+                self.mutation_mag = 0.0627
+                self.elite_fraction = 0.2
+                self.lr = 0.0000186
+                # num of trials during evaluation step:
+                self.num_evals = 3
 
             # Mutation and crossover:
             self.mutation_prob = 0.9
-            self.mutation_mag = 0.0247682869654
 
             self.mutation_batch_size = self.batch_size
             # might be provided by the user:
@@ -123,7 +148,7 @@ class Parameters:
         # save the results:
         self.state_dim = None
         self.action_dim = None
-        self.save_foldername = './tmp/'
+        self.save_foldername = './logs'
         self.should_log = conf.should_log if hasattr(
             conf, "should_log") else False
 

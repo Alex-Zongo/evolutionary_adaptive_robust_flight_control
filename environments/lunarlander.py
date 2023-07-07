@@ -15,7 +15,7 @@ class LunarLanderWrapper(gym.Wrapper):
                  render: bool = False,
                  broken_engine: bool = False,
                  state_noise: bool = False,
-                 noise_intensity: float = 0.05) -> tuple:
+                 noise_intensity: float = 0.05):
         """
         Wrapper function for the gymnasium LunarLander environment.
         It include the following faulty case:
@@ -23,7 +23,7 @@ class LunarLanderWrapper(gym.Wrapper):
             * faulty navigation sensors: noisy position
 
         params:
-            actor: object -> actor class that select the action
+            actor: object -> actor class that has the select_action() method
 
             env: object -> the Environment with OpenAi Gymnasium has the following methods (make, reset, step)
 
@@ -45,10 +45,10 @@ class LunarLanderWrapper(gym.Wrapper):
         all_y_vels = []
 
         # reset the env
-        done = False
+        terminated = False
         state, _ = self.env.reset()
 
-        while not done:
+        while not terminated:
             if render:
                 self.env.render()
 
@@ -61,7 +61,7 @@ class LunarLanderWrapper(gym.Wrapper):
                 action[0] = np.clip(action[0], -1, 0.5)
 
             # step into the environment
-            next_state, reward, done, truncated, info = self.env.step(
+            next_state, reward, terminated, truncated, info = self.env.step(
                 action.flatten())
 
             # update

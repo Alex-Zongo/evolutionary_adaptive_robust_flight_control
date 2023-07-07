@@ -1,0 +1,34 @@
+2023-07-03 16:03:47,420 INFO    MainThread:2609453 [wandb_setup.py:_flush():76] Current SDK version is 0.15.4
+2023-07-03 16:03:47,420 INFO    MainThread:2609453 [wandb_setup.py:_flush():76] Configure stats pid to 2609453
+2023-07-03 16:03:47,420 INFO    MainThread:2609453 [wandb_setup.py:_flush():76] Loading settings from /home/alex/.config/wandb/settings
+2023-07-03 16:03:47,420 INFO    MainThread:2609453 [wandb_setup.py:_flush():76] Loading settings from /home/alex/Documents/research/evolutionary_adaptive_robust_flight_control/wandb/settings
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'train.py', 'program': '/home/alex/Documents/research/evolutionary_adaptive_robust_flight_control/train.py'}
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_init.py:_log_setup():507] Logging user logs to ./logs/wandb/run-20230703_160347-e9cfgj6l/logs/debug.log
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_init.py:_log_setup():508] Logging internal logs to ./logs/wandb/run-20230703_160347-e9cfgj6l/logs/debug-internal.log
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_init.py:init():547] calling init triggers
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_init.py:init():554] wandb.init called with sweep_config: {}
+config: {'device': device(type='cpu'), 'env_name': 'PHlab_attitude_nominal', 'save_periodic': True, 'num_frames': 500000, 'rl_to_ea_sync_period': 1, 'next_save': 1000, 'test_ea': False, 'frac_frames_train': 1, 'batch_size': 256, 'buffer_size': 2000000, 'lr': 1.86e-05, 'gamma': 0.99, 'noise_sd': 0.23, 'use_done_mask': True, 'use_ounoise': False, 'tau': 0.005, 'seed': 7, 'num_layers': 3, 'actor_num_layers': 3, 'actor_hidden_size': 72, 'hidden_size': 72, 'critic_num_layers': 2, 'critic_hidden_size': [200, 300], 'activation_actor': 'tanh', 'activation_critic': 'elu', 'nonlin_activation': 'tanh', 'learn_start': 10000, 'per': False, 'use_caps': True, 'policy_update_freq': 3, 'noise_clip': 0.5, 'pop_size': 50, 'use_champion_target': False, 'individual_bs': 8000, 'smooth_fitness': True, 'mutation_mag': 0.0627, 'elite_fraction': 0.2, 'num_evals': 3, 'mutation_prob': 0.9, 'mutation_batch_size': 256, 'mut_type': 'safe', 'distil_crossover': True, 'distil_type': 'fitness', 'crossover_prob': 0.0, 'verbose_crossover': True, 'verbose_mut': True, 'state_dim': 7, 'action_dim': 3, 'save_foldername': './logs', 'should_log': True}
+2023-07-03 16:03:47,421 INFO    MainThread:2609453 [wandb_init.py:init():596] starting backend
+2023-07-03 16:03:47,422 INFO    MainThread:2609453 [wandb_init.py:init():600] setting up manager
+2023-07-03 16:03:47,428 INFO    MainThread:2609453 [backend.py:_multiprocessing_setup():106] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2023-07-03 16:03:47,433 INFO    MainThread:2609453 [wandb_init.py:init():606] backend started and connected
+2023-07-03 16:03:47,437 INFO    MainThread:2609453 [wandb_init.py:init():703] updated telemetry
+2023-07-03 16:03:47,442 INFO    MainThread:2609453 [wandb_init.py:init():736] communicating run to backend with 60.0 second timeout
+2023-07-03 16:03:48,158 INFO    MainThread:2609453 [wandb_run.py:_on_init():2176] communicating current version
+2023-07-03 16:03:48,445 INFO    MainThread:2609453 [wandb_run.py:_on_init():2185] got version response 
+2023-07-03 16:03:48,445 INFO    MainThread:2609453 [wandb_init.py:init():787] starting run threads in backend
+2023-07-03 16:03:48,484 INFO    MainThread:2609453 [wandb_run.py:_console_start():2155] atexit reg
+2023-07-03 16:03:48,484 INFO    MainThread:2609453 [wandb_run.py:_redirect():2010] redirect: SettingsConsole.WRAP_RAW
+2023-07-03 16:03:48,485 INFO    MainThread:2609453 [wandb_run.py:_redirect():2075] Wrapping output streams.
+2023-07-03 16:03:48,485 INFO    MainThread:2609453 [wandb_run.py:_redirect():2100] Redirects installed.
+2023-07-03 16:03:48,485 INFO    MainThread:2609453 [wandb_init.py:init():828] run started, returning control to user process
+2023-07-03 16:03:48,486 INFO    MainThread:2609453 [wandb_run.py:_config_callback():1283] config_cb None None {'save_foldername': './logs/wandb/run-20230703_160347-e9cfgj6l/files', 'run_name': 'cpu_train_attitude_500000_frames_SERL50_caps_distil_fitness_mut_safe_smooth_fitness_paperHyperparams'}
+2023-07-03 20:08:21,612 INFO    MainThread:2609453 [wandb_run.py:_finish():1890] finishing run alexanicetzongo/Intelligent_Fault_tolerant_adaptive_flight_control/e9cfgj6l
+2023-07-03 20:08:21,613 INFO    MainThread:2609453 [wandb_run.py:_atexit_cleanup():2124] got exitcode: 0
+2023-07-03 20:08:21,613 INFO    MainThread:2609453 [wandb_run.py:_restore():2107] restore
+2023-07-03 20:08:21,613 INFO    MainThread:2609453 [wandb_run.py:_restore():2113] restore done
+2023-07-03 20:08:33,310 INFO    MainThread:2609453 [wandb_run.py:_footer_history_summary_info():3467] rendering history
+2023-07-03 20:08:33,311 INFO    MainThread:2609453 [wandb_run.py:_footer_history_summary_info():3499] rendering summary
+2023-07-03 20:08:33,317 INFO    MainThread:2609453 [wandb_run.py:_footer_sync_info():3426] logging synced files

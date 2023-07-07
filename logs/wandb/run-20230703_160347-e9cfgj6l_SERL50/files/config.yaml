@@ -1,0 +1,182 @@
+wandb_version: 1
+
+device:
+  desc: null
+  value: cpu
+env_name:
+  desc: null
+  value: PHlab_attitude_nominal
+save_periodic:
+  desc: null
+  value: true
+num_frames:
+  desc: null
+  value: 500000
+rl_to_ea_sync_period:
+  desc: null
+  value: 1
+next_save:
+  desc: null
+  value: 1000
+test_ea:
+  desc: null
+  value: false
+frac_frames_train:
+  desc: null
+  value: 1
+batch_size:
+  desc: null
+  value: 256
+buffer_size:
+  desc: null
+  value: 2000000
+lr:
+  desc: null
+  value: 1.86e-05
+gamma:
+  desc: null
+  value: 0.99
+noise_sd:
+  desc: null
+  value: 0.23
+use_done_mask:
+  desc: null
+  value: true
+use_ounoise:
+  desc: null
+  value: false
+tau:
+  desc: null
+  value: 0.005
+seed:
+  desc: null
+  value: 7
+num_layers:
+  desc: null
+  value: 3
+actor_num_layers:
+  desc: null
+  value: 3
+actor_hidden_size:
+  desc: null
+  value: 72
+hidden_size:
+  desc: null
+  value: 72
+critic_num_layers:
+  desc: null
+  value: 2
+critic_hidden_size:
+  desc: null
+  value:
+  - 200
+  - 300
+activation_actor:
+  desc: null
+  value: tanh
+activation_critic:
+  desc: null
+  value: elu
+nonlin_activation:
+  desc: null
+  value: tanh
+learn_start:
+  desc: null
+  value: 10000
+per:
+  desc: null
+  value: false
+use_caps:
+  desc: null
+  value: true
+policy_update_freq:
+  desc: null
+  value: 3
+noise_clip:
+  desc: null
+  value: 0.5
+pop_size:
+  desc: null
+  value: 50
+use_champion_target:
+  desc: null
+  value: false
+individual_bs:
+  desc: null
+  value: 8000
+smooth_fitness:
+  desc: null
+  value: true
+mutation_mag:
+  desc: null
+  value: 0.0627
+elite_fraction:
+  desc: null
+  value: 0.2
+num_evals:
+  desc: null
+  value: 3
+mutation_prob:
+  desc: null
+  value: 0.9
+mutation_batch_size:
+  desc: null
+  value: 256
+mut_type:
+  desc: null
+  value: safe
+distil_crossover:
+  desc: null
+  value: true
+distil_type:
+  desc: null
+  value: fitness
+crossover_prob:
+  desc: null
+  value: 0.0
+verbose_crossover:
+  desc: null
+  value: true
+verbose_mut:
+  desc: null
+  value: true
+state_dim:
+  desc: null
+  value: 7
+action_dim:
+  desc: null
+  value: 3
+save_foldername:
+  desc: null
+  value: ./logs/wandb/run-20230703_160347-e9cfgj6l/files
+should_log:
+  desc: null
+  value: true
+_wandb:
+  desc: null
+  value:
+    python_version: 3.10.6
+    cli_version: 0.15.4
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1688371427.43353
+    t:
+      1:
+      - 1
+      - 55
+      2:
+      - 1
+      - 55
+      3:
+      - 2
+      - 13
+      - 16
+      - 23
+      4: 3.10.6
+      5: 0.15.4
+      8:
+      - 5
+run_name:
+  desc: null
+  value: cpu_train_attitude_500000_frames_SERL50_caps_distil_fitness_mut_safe_smooth_fitness_paperHyperparams

@@ -10,6 +10,7 @@ from tqdm import tqdm
 from core_algorithms.genetic_agent import GeneticAgent, Actor
 from core_algorithms.model_utils import OUNoise, GaussianNoise
 from core_algorithms.ddpg import DDPG
+from core_algorithms.td3 import TD3
 from core_algorithms.neuro_evo_model import SSNE
 
 
@@ -22,7 +23,7 @@ class Agent:
 
         # define Rl agent:
         # initialize the RL agent: #TODO: TD3, DDPG, PPO or SAC
-        self.rl_agent = DDPG(args)
+        self.rl_agent = TD3(args)
 
         # initialize the population:
         self.pop: List = []
@@ -66,7 +67,7 @@ class Agent:
         self.champion_history: np.ndarray = None
 
     # TODO: add type to the "agent" param -> [GeneticAgent, TD3, SAC or DDPG]
-    def evaluate(self, agent: DDPG or GeneticAgent, is_action_noise: bool, store_transition: bool):
+    def evaluate(self, agent: TD3 or DDPG or GeneticAgent, is_action_noise: bool, store_transition: bool):
         """
         Play one game to evaluate the agent:
         Args:
@@ -79,7 +80,7 @@ class Agent:
 
         # init states, env
         state_lst, rewards, action_lst = [], [], []
-        obs = self.env.reset()
+        obs, _ = self.env.reset()
         done = False
 
         # set action into evaluation mode:
@@ -96,9 +97,14 @@ class Agent:
                 action = np.clip(action + clipped_noise, -1.0, 1.0)
 
             # execute action: simulate one step into the environment:
-            next_obs, reward, done, info = self.env.step(action.flatten())
+            if 'lunar' in self.params.env_name.lower():
+                next_obs, reward, done, truncated, info = self.env.step(
+                    action.flatten())
+                action_lst.append(action.flatten())
+            else:
+                next_obs, reward, done, info = self.env.step(action.flatten())
+                action_lst.append(self.env.last_u)  # actuator deflection:
             rewards.append(reward)
-            action_lst.append(self.env.last_u)  # actuator deflection:
 
             # add experiences to buffer:
             if store_transition:
@@ -114,7 +120,10 @@ class Agent:
                 self.gen_frames += 1
             else:
                 # save for future validation:
-                state_lst.append(self.env.x)
+                if 'ph' in self.params.env_name.lower():
+                    state_lst.append(self.env.x)
+                else:
+                    state_lst.append(obs)
 
             # update the agent obs:
             obs = next_obs
@@ -133,11 +142,13 @@ class Agent:
         # TODO: Important: Use a smoothness based fitness: study the effect of this: (the operation of ADDING that value to the reward) Could it better to multiply it by value and add it later
         if self.params.smooth_fitness:
             fitness += smoothness
+        # print(info['ref'])  # TODO: check the ref and remove this
+        episode = Episode(fitness=fitness, smoothness=smoothness,
+                          length=info['t'], state_history=state_lst, ref_signals=info['ref'], actions=actions, reward_lst=rewards)
+        return episode
 
-        return Episode(fitness=fitness, smoothness=smoothness, length=info['t'], state_history=state_lst, ref_signals=info['ref'], actions=actions, reward_lst=rewards)
-
-    def rl_to_evo_loop(self, rl_agent: DDPG, evo_net: GeneticAgent):
-        for target_param, param in zip(evo_net.parameters(), rl_agent.actor.parameters()):
+    def rl_to_evo_loop(self, rl_agent: DDPG or TD3, evo_net: GeneticAgent):
+        for target_param, param in zip(evo_net.actor.parameters(), rl_agent.actor.parameters()):
             target_param.data.copy_(param.data)
         evo_net.buffer.reset()
         evo_net.buffer.push_content_of(rl_agent.buffer)
@@ -145,7 +156,7 @@ class Agent:
         evo_net.critical_buffer.push_content_of(rl_agent.critical_buffer)
 
     def evo_to_rl_loop(self, rl_agent, evo_net):
-        for target_param, param in zip(rl_agent.parameters(), evo_net.parameters(),):
+        for target_param, param in zip(rl_agent.actor.parameters(), evo_net.actor.parameters(),):
             target_param.data.copy_(param.data)
 
     def get_pop_novelty(self, bcs: np.ndarray):
@@ -180,7 +191,7 @@ class Agent:
 
         return {'PG_obj': np.mean(policy_grad_loss), 'TD_loss': np.median(TD_loss)}
 
-    def validate_agent(self, agent: Actor) -> Tuple[float, float, float, float, float, float, Episode]:
+    def validate_agent(self, agent: Actor):
         """ Evaluate the given agent actor and do not store transitions.
 
         Args:
@@ -325,7 +336,7 @@ class Agent:
             parameters (object): container class of teh training hyper-parameters
             elite_index (int): Index of the best performing agent. Defaults to None.
         """
-        if not self.pop.isEmpty():
+        if len(self.pop) > 0:
             pop_dict = {}
             for i, idx in enumerate(self.pop):
                 pop_dict[f"actor_{i}"] = idx.actor.state_dict()

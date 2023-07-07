@@ -11,11 +11,11 @@ class Actor(nn.Module):
     def __init__(self, args: Parameters, init=False):
         super(Actor, self).__init__()
         self.args = args
-        h = self.args.hidden_size
-        L = self.args.num_layers
-        self.activation = activations[args.activation_actor.lower()]
+        h = self.args.actor_hidden_size
+        self.L = self.args.actor_num_layers
+        self.activation = activations[args.nonlin_activation.lower()]
         # activ_layer = F.tanh() if activation == nn.Tanh else F.elu()
-        layers = []
+
         # input Layer:
         self.input_layer = nn.Linear(args.state_dim, h)
         # hidden layers:
@@ -49,7 +49,7 @@ class Actor(nn.Module):
     def forward(self, state: torch.tensor):
         # return self.net(state)
         x = self.activation(self.input_layer(state))  # input setup:
-        for _ in range(self.args.num_layers):
+        for _ in range(self.L):
             # hidden layers:
             x = self.activation(self.lnorm(self.hid_layer(x)))
         return F.tanh(self.output_layer(x))  # output layer:
@@ -123,15 +123,15 @@ class GeneticAgent:
         """
         self.args = args
         self.actor = Actor(args)
-        self.actor_optim = Adam(self.actor.parameters(), lr=1e-3)
+        self.actor_optim = Adam(self.actor.parameters(), lr=args.lr)
 
         self.buffer = ReplayMemory(
-            self.args.individual_bs, device=self.args.device)
+            self.args.individual_bs, device=args.device)
         self.critical_buffer = ReplayMemory(
-            self.args.individual_bs, device=self.args.device)
+            self.args.individual_bs, device=args.device)
         # self.loss = nn.MSELoss()
 
-    def update_parameters(self, batch, parent1: Actor, parent2: Actor, critic) -> float:
+    def update_parameters(self, batch, parent1, parent2, critic) -> float:
         """ Crossover parameters update:
 
         Args:
@@ -151,17 +151,17 @@ class GeneticAgent:
 
         # parents Q's (depending on the DRL algo -> double Q's [] for training stability)
         p1_q1, p1_q2 = critic(state_batch, p1_action)
-        p1_q = torch.min(p1_q1, p1_q2)
+        p1_q = torch.min(p1_q1, p1_q2).flatten()
         p2_q1, p2_q2 = critic(state_batch, p2_action)
-        p2_q = torch.min(p2_q1, p2_q2)
+        p2_q = torch.min(p2_q1, p2_q2).flatten()
 
         # selecting best behaving parent based on Q-filtering
         # threshold on how much better an action is wrt to the other:
         eps = 1e-6
         action_batch = torch.cat(
-            (p1_action[p1_q - p2_q > eps], p2_action[p2_q - p1_q > eps])).detach()
+            (p1_action[p1_q - p2_q > eps], p2_action[p2_q - p1_q >= eps])).detach()
         state_batch = torch.cat(
-            (state_batch[p1_q - p2_q > eps], state_batch[p2_q - p1_q > eps])).detach()
+            (state_batch[p1_q - p2_q > eps], state_batch[p2_q - p1_q >= eps])).detach()
         actor_action = self.actor(state_batch)
 
         # actor update:

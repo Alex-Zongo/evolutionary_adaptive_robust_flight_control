@@ -1,0 +1,117 @@
+{
+    "os": "Linux-5.19.0-43-generic-x86_64-with-glibc2.35",
+    "python": "3.10.6",
+    "heartbeatAt": "2023-06-30T15:20:44.164404",
+    "startedAt": "2023-06-30T15:20:43.084205",
+    "docker": null,
+    "cuda": null,
+    "args": [
+        "-frames=500_000",
+        "-use_caps",
+        "-should_log",
+        "-use_distil",
+        "-distil_type=fitness",
+        "-mut_type=safe",
+        "-verbose_mut",
+        "-verbose_crossover",
+        "-smooth_fitness",
+        "-disable_cuda",
+        "-pop_size=0"
+    ],
+    "state": "running",
+    "program": "/home/alex/Documents/research/evolutionary_adaptive_robust_flight_control/train.py",
+    "codePath": "train.py",
+    "git": {
+        "remote": "https://github.com/Alex-Zongo/evolutionary_adaptive_robust_flight_control.git",
+        "commit": "be47189cf81200b2785cc3fdfb03c09d5547c1b2"
+    },
+    "email": "alexanicetzongo@gmail.com",
+    "root": "/home/alex/Documents/research/evolutionary_adaptive_robust_flight_control",
+    "host": "alex-To-be-filled-by-O-E-M",
+    "username": "alex",
+    "executable": "/home/alex/Documents/research/evolutionary_adaptive_robust_flight_control/.venv/bin/python3",
+    "cpu_count": 6,
+    "cpu_count_logical": 12,
+    "cpu_freq": {
+        "current": 2881.4641666666666,
+        "min": 1200.0,
+        "max": 3700.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 3500.17,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 3600.337,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 1300.132,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 3500.219,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 3341.316,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 2500.22,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 3500.389,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 3600.221,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 1300.077,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 3500.256,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 3491.369,
+            "min": 1200.0,
+            "max": 3700.0
+        },
+        {
+            "current": 2500.239,
+            "min": 1200.0,
+            "max": 3700.0
+        }
+    ],
+    "disk": {
+        "total": 142.6315460205078,
+        "used": 70.58156204223633
+    },
+    "gpu": "NVIDIA GeForce GTX TITAN X",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA GeForce GTX TITAN X",
+            "memory_total": 12884901888
+        }
+    ],
+    "memory": {
+        "total": 62.63544464111328
+    }
+}

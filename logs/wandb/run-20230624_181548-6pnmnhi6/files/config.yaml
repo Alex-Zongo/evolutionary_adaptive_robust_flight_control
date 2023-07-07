@@ -1,0 +1,165 @@
+wandb_version: 1
+
+device:
+  desc: null
+  value: cuda
+env_name:
+  desc: null
+  value: Citation Aircraft
+save_periodic:
+  desc: null
+  value: true
+num_frames:
+  desc: null
+  value: 100000
+rl_to_ea_sync_period:
+  desc: null
+  value: 1
+next_save:
+  desc: null
+  value: 1000
+test_ea:
+  desc: null
+  value: false
+frac_frames_train:
+  desc: null
+  value: 1
+batch_size:
+  desc: null
+  value: 86
+buffer_size:
+  desc: null
+  value: 800000
+lr:
+  desc: null
+  value: 0.00018643512599969097
+gamma:
+  desc: null
+  value: 0.98
+noise_sd:
+  desc: null
+  value: 0.2962183114680794
+use_done_mask:
+  desc: null
+  value: true
+use_ounoise:
+  desc: null
+  value: false
+tau:
+  desc: null
+  value: 0.005
+seed:
+  desc: null
+  value: 7
+num_layers:
+  desc: null
+  value: 3
+hidden_size:
+  desc: null
+  value: 72
+activation_actor:
+  desc: null
+  value: tanh
+activation_critic:
+  desc: null
+  value: elu
+learn_start:
+  desc: null
+  value: 10000
+per:
+  desc: null
+  value: false
+use_caps:
+  desc: null
+  value: true
+policy_update_freq:
+  desc: null
+  value: 3
+noise_clip:
+  desc: null
+  value: 0.5
+pop_size:
+  desc: null
+  value: 10
+use_champion_target:
+  desc: null
+  value: false
+individual_bs:
+  desc: null
+  value: 10000
+smooth_fitness:
+  desc: null
+  value: true
+num_evals:
+  desc: null
+  value: 3
+elite_fraction:
+  desc: null
+  value: 0.2
+mutation_prob:
+  desc: null
+  value: 0.9
+mutation_mag:
+  desc: null
+  value: 0.0247682869654
+mutation_batch_size:
+  desc: null
+  value: 86
+mut_type:
+  desc: null
+  value: proximal
+distil_crossover:
+  desc: null
+  value: true
+distil_type:
+  desc: null
+  value: distance
+crossover_prob:
+  desc: null
+  value: 0.0
+verbose_crossover:
+  desc: null
+  value: true
+verbose_mut:
+  desc: null
+  value: true
+state_dim:
+  desc: null
+  value: 13
+action_dim:
+  desc: null
+  value: 3
+save_foldername:
+  desc: null
+  value: ./logs/wandb/run-20230624_181548-6pnmnhi6/files
+should_log:
+  desc: null
+  value: true
+_wandb:
+  desc: null
+  value:
+    python_version: 3.10.6
+    cli_version: 0.15.4
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    start_time: 1687601748.923283
+    t:
+      1:
+      - 1
+      - 55
+      2:
+      - 1
+      - 55
+      3:
+      - 2
+      - 13
+      - 16
+      - 23
+      4: 3.10.6
+      5: 0.15.4
+      8:
+      - 5
+run_name:
+  desc: null
+  value: train_100000_frames_td3_caps_distil_fitness_mut_proximal_smooth_fitness

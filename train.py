@@ -6,12 +6,16 @@ import torch
 import numpy as np
 from core_algorithms.utils import load_config
 from environments.aircraftenv import AircraftEnv
+from environments.config import select_env
 from core_algorithms.agent import Agent
 from parameters import Parameters
 import wandb
 
 # -store_true means that it becomes true if I mention the argument
 parser = argparse.ArgumentParser()
+
+parser.add_argument('-env', type=str, help='Environment Choices: (LunarLanderContinuous-v2) (PHLab)',
+                    default='PHlab_attitude_nominal')
 
 parser.add_argument(
     '-should_log', help='Wether the WandB loggers are used', action='store_true')
@@ -28,7 +32,7 @@ parser.add_argument('-champion_target',
 parser.add_argument('-seed', help='Random seed to be used',
                     type=int, default=7)
 parser.add_argument('-disable_cuda', help='Disables CUDA',
-                    action='store_true', default=True)
+                    action='store_true', default=False)
 parser.add_argument('-use_caps', help='Use CAPS loss regularization for smooth actions.',
                     action='store_true', default=False)
 parser.add_argument(
@@ -77,16 +81,19 @@ if __name__ == '__main__':
     conf = parser.parse_args()
 
     should_log = True
-    run_name = "test_train"
+    run_name = "cpu_train_attitude_incremental_1000000_frames_SERL50_caps_distil_fitness_mut_safe_smooth_fitness_paperHyperparams"
+    # run_name = "test_ref_values_no_log"
     parameters = Parameters(conf=conf)
     # num_frames = 800_000  # Number of frames to learn from:
     # batch_size = 86  # Number of experiences to use for each training step:
     # buffer_size = 100_000  # Size of the replay buffer:
 
     # create the env:
-    env = AircraftEnv(configuration="full_control",
-                      render_mode=False, realtime=False, incremental=False)
-    env_name = "Citation Aircraft"
+    env = select_env(conf.env)
+    # env = AircraftEnv(configuration="full_control",
+    #                   render_mode=False, realtime=False, incremental=False)
+    env_name = "PHlab Citation Aircraft"
+    # env_name = "LunarLanderContinuous-v2"
     parameters.action_dim = env.action_space.shape[0]
     parameters.state_dim = env.observation_space.shape[0]
 
@@ -108,6 +115,7 @@ if __name__ == '__main__':
             name=run_name,
             config=params_dict)
         parameters.save_foldername = str(run.dir)
+        print('Saved to:', parameters.save_foldername)
         wandb.config.update({
             "save_foldername": parameters.save_foldername,
             "run_name": run.name,
@@ -121,10 +129,12 @@ if __name__ == '__main__':
     # create the agent:
     agent = Agent(args=parameters, environment=env)
     print(
-        f" Running the environment: {env_name}\n State_dim: {parameters.state_dim}\n Action_dim: {parameters.action_dim}\n")
+        f" Running the environment: {parameters.env_name}\n State_dim: {parameters.state_dim}\n Action_dim: {parameters.action_dim}\n")
 
     # main training loop:
     start_time = time.time()
+    print("num frames", parameters.num_frames)
+    print("agent frames", agent.num_frames)
     while agent.num_frames <= parameters.num_frames:
         # evaluate over all episodes and return stats:
         stats = agent.train()
