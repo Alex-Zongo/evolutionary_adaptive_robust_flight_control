@@ -1,4 +1,8 @@
 {
 	"python.analysis.typeCheckingMode": "off",
-	"ros.distro": "humble"
+	"ros.distro": "humble",
+	"[python]": {
+		"editor.defaultFormatter": "ms-python.autopep8"
+	},
+	"python.formatting.provider": "none"
 }

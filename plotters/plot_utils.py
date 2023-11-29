@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 # %matplotlib inline
 plt.rcParams['figure.figsize'] = [15, 12]
+plt.rcParams['lines.markersize'] = 4
 
 
 def plot(data, name, fault):
@@ -42,6 +43,7 @@ def plot(data, name, fault):
     phi = np.rad2deg(phi)
     psi = np.rad2deg(psi)
     alpha = np.rad2deg(alpha)
+    beta = np.rad2deg(beta)
     de = np.rad2deg(de)
     da = np.rad2deg(da)
     dr = np.rad2deg(dr)
@@ -55,38 +57,52 @@ def plot(data, name, fault):
     fig, axis = plt.subplots(3, 2)
     labels = ['Tracked State [deg]', 'Reference [deg]',
               'Tracked State Rate [deg/s]', 'Actuator Deflection [deg]']
+    tracked_state_color = 'magenta'
+    ref_state_color = 'black'
+    state_rate_color = 'cyan'
+    action_color = 'green'
+    fontsize = 20
 
-    l1 = axis[0, 0].plot(_t, theta, color='red')
-    l2 = axis[0, 0].plot(_t, theta_ref, color='black', linestyle='--')
-    l3 = axis[0, 0].plot(_t, q, '*--', color='pink')
-    # axis[0, 0].plot(_t, alpha, 'y-.', label='alpha')
-    # axis[0, 0].legend()
-    axis[0, 0].set_ylabel(r'$\theta, q$', fontsize=20)
+    l1 = axis[0, 0].plot(_t, theta, color=tracked_state_color)
 
-    l4 = axis[0, 1].plot(_t, de, color='green')
-    axis[0, 1].set_ylabel(r'$\delta_e$', fontsize=20)
-    print('$\theta \phi \psi$')
-    axis[1, 0].plot(_t, phi, 'r')
-    axis[1, 0].plot(_t, phi_ref, 'k--', )
-    axis[1, 0].plot(_t, p, '*--', color='pink')
-    axis[1, 0].set_ylabel(r'$\phi, p$', fontsize=20)
+    l2 = axis[0, 0].plot(_t, theta_ref, color=ref_state_color, linestyle='--')
 
-    axis[1, 1].plot(_t, da, color='green')
-    axis[1, 1].set_ylabel(r'$\delta_a$', fontsize=20)
+    l3 = axis[0, 0].scatter(_t[::200], q[::200], color=state_rate_color)
 
-    axis[2, 0].plot(_t, psi, 'r')
-    axis[2, 0].plot(_t, psi_ref, 'k--')
-    axis[2, 0].set_xlabel('Time [S]', fontsize=20)
-    axis[2, 0].set_ylabel(r'$\psi$', fontsize=20)
+    axis[0, 0].set_ylabel(r'$\theta, q$', fontsize=fontsize)
+    axis[0, 0].grid()
 
-    axis[2, 1].plot(_t, dr, color='green')
-    axis[2, 1].set_ylabel(r'$\delta_r$', fontsize=20)
-    # axis[2, 1].legend()
+    l4 = axis[0, 1].plot(_t, de, color=action_color)
+    axis[0, 1].set_ylabel(r'$\delta_e$', fontsize=fontsize)
+    axis[0, 1].grid()
 
-    axis[2, 1].set_xlabel('Time [S]', fontsize=20)
-    fig.suptitle(name, fontsize=20)
-    fig.legend([l1, l2, l3, l4], labels=labels,
-               loc='lower center', ncol=4, fontsize=15)
+    axis[1, 0].plot(_t, phi, color=tracked_state_color)
+    axis[1, 0].plot(_t, phi_ref, linestyle='--', color=ref_state_color)
+
+    axis[1, 0].scatter(_t[::200], p[::200], color=state_rate_color)
+    axis[1, 0].set_ylabel(r'$\phi, p$', fontsize=fontsize)
+    axis[1, 0].grid()
+
+    axis[1, 1].plot(_t, da, color=action_color)
+    axis[1, 1].set_ylabel(r'$\delta_a$', fontsize=fontsize)
+    axis[1, 1].grid()
+
+    # TODO: replace psi with beta
+    axis[2, 0].plot(_t, beta, color=tracked_state_color)
+    axis[2, 0].plot(_t, psi_ref, linestyle='--', color=ref_state_color)
+    axis[2, 0].scatter(_t[::200], r[::200], color=state_rate_color)
+    axis[2, 0].set_xlabel('Time [S]', fontsize=fontsize)
+    axis[2, 0].set_ylabel(r'$\beta, r$', fontsize=fontsize)
+    axis[2, 0].grid()
+
+    axis[2, 1].plot(_t, dr, color=action_color)
+    axis[2, 1].set_ylabel(r'$\delta_r$', fontsize=fontsize)
+    axis[2, 1].grid()
+
+    axis[2, 1].set_xlabel('Time [S]', fontsize=fontsize)
+    fig.suptitle(name, fontsize=fontsize)
+    fig.legend([l1, l2, l3, l4], labels=labels, loc='upper center',
+               ncol=4, mode='expand', bbox_to_anchor=(0.11, 0.68, 0.8, 0.25), fontsize=13)
     # plt.legend()
     # plt.show()
     # ***************************************

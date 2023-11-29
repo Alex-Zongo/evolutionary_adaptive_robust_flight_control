@@ -12,7 +12,8 @@ from torch.autograd import Variable
 activations = {
     'tanh': nn.Tanh(),
     'elu': nn.ELU(),
-    'relu': nn.LeakyReLU(),  # or nn.ReLU()
+    'relu': nn.ReLU(),
+    'leaky_relu': nn.LeakyReLU(),  # or nn.ReLU()
 }
 
 

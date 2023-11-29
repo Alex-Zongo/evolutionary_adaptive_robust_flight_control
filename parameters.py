@@ -9,8 +9,9 @@ class Parameters:
             return
 
         # setting the device:
-        if not conf.disable_cuda and torch.cuda.is_available():
-            self.device = torch.device("cuda")
+        if hasattr(conf, 'disable_cuda'):
+            if not conf.disable_cuda and torch.cuda.is_available():
+                self.device = torch.device("cuda")
         else:
             self.device = torch.device("cpu")
 

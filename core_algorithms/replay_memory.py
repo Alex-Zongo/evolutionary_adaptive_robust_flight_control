@@ -7,6 +7,76 @@ Transition = namedtuple(
     'Transition', ('state', 'action', 'next_state', 'reward', 'done')
 )
 
+Transition_stability = namedtuple(
+    'Transition_stability', ('input', 'state', 'next_state')
+)
+
+
+class IdentificationBuffer:
+    def __init__(self, capacity: int, device: str = "cpu"):
+        """
+        Args:
+            capacity: size of the replay memory
+            batch_size: size of the batch to sample from the memory
+            seed: random seed
+        """
+        self.device = device
+        self.capacity = capacity
+        # self.batch_size = batch_size
+        # self.seed = random.seed(seed)
+        self.memory = []
+        self.position = 0
+
+    def push(self, *args):
+        """
+        Push a transition into the memory.
+        """
+        if len(self.memory) < self.capacity:
+            self.memory.append(None)
+
+        reshaped_args = []
+        for arg in args:
+            reshaped_args.append(np.reshape(arg, (1, -1)))
+
+        self.memory[self.position] = Transition_stability(*reshaped_args)
+        # update the position
+        self.position = (self.position + 1) % self.capacity
+
+    def sample(self, batch_size):
+        """
+        Sample a batch of transitions from the memory.
+        """
+        transitions = random.sample(self.memory, batch_size)
+        batch = Transition_stability(*zip(*transitions))
+
+        inputs = torch.FloatTensor(np.concatenate(batch.input)).to(self.device)
+
+        states = torch.FloatTensor(
+            np.concatenate(batch.state)).to(self.device)
+        next_states = torch.FloatTensor(
+            np.concatenate(batch.next_state)).to(self.device)
+
+        return inputs, states, next_states
+
+    def __len__(self):
+        """
+        Return the current size of the memory.
+        """
+        return len(self.memory)
+
+    def shuffle(self):
+        """
+        Shuffle the memory.
+        """
+        random.shuffle(self.memory)
+
+    def reset(self):
+        """
+        Reset the memory.
+        """
+        self.memory = []
+        self.position = 0
+
 
 class ReplayMemory:
     """
@@ -36,7 +106,10 @@ class ReplayMemory:
 
         reshaped_args = []
         for arg in args:
-            reshaped_args.append(np.reshape(arg, (1, -1)))
+            if hasattr(arg, "ndim") and arg.ndim > 1:
+                reshaped_args.append(arg)
+            else:
+                reshaped_args.append(np.reshape(arg, (1, -1)))
 
         self.memory[self.position] = Transition(*reshaped_args)
         # update the position
@@ -85,8 +158,10 @@ class ReplayMemory:
         """
         transitions = random.sample(self.memory, batch_size)
         batch = Transition(*zip(*transitions))
-
+        # print(batch.state[0])
         state = torch.FloatTensor(np.concatenate(batch.state)).to(self.device)
+        # state = torch.FloatTensor(np.vstack((batch.state))).to(self.device)
+
         action = torch.FloatTensor(
             np.concatenate(batch.action)).to(self.device)
         next_state = torch.FloatTensor(
@@ -94,7 +169,11 @@ class ReplayMemory:
         reward = torch.FloatTensor(
             np.concatenate(batch.reward)).to(self.device)
         done = torch.FloatTensor(np.concatenate(batch.done)).to(self.device)
-
+        # print("State shape: ", state.shape)
+        # print("Next state shape: ", next_state.shape)
+        # print("Reward shape: ", reward.shape)
+        # print("Action shape: ", action.shape)
+        # print("done shape: ", done.shape)
         return state, action, next_state, reward, done
 
     def sample_from_latest(self, batch_size, latest_num: int):

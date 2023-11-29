@@ -10,7 +10,6 @@ import argparse
 import numpy as np
 from core_algorithms.utils import calc_nMAE, calc_smoothness, load_config
 from parameters import Parameters
-import signals
 import matplotlib.pyplot as plt
 from environments.aircraftenv import AircraftEnv
 from environments.config import select_env
@@ -354,7 +353,7 @@ def main():
 
 
 def save_trajectory(fault_path, data):
-    """_summary_
+    """save the actor trajectory data
 
     Args:
         fault_path (_type_): _description_

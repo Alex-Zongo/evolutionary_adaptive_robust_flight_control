@@ -1,0 +1,17 @@
+.venv
+tmp
+wandb
+online_model*
+online_eval_log*
+.vscode
+es_grad*
+*.ipynb
+cma_*
+__pycache__
+sweep_params.yaml
+train_es.py
+train_sweep.py
+train.py
+parameters.py
+evaluate.py
+evaluation_utils.py
